@@ -6,7 +6,7 @@
   
 # 1. Arm Templates Repository
 ### 1.1. Introduction
-This Repository will contain some of the ARM Templates I have created for any number of reasons, mostly to be fair to try and learn how to create ARM templates. I find the whole subject of Infrastructure as code fascinating andd want to show that I can accomplish what I am setting out to do. By creating the templates here. Some will be fairly simple and some will be very complex depending on the problem or targets I have set myself. I dont tend to name the temapltes
+This Repository will contain some of the ARM Templates I create for any number of reasons, mostly to be fair this will be learn how to create ARM templates and solve the little problems/challenges I give myself. I find the whole subject of Infrastructure as code fascinating and want to show that I can accomplish what I am setting out to do. By creating the templates here. Some will be fairly simple and some will be very complex depending on the scale o fthe problem or targets I have set myself. I don't tend to name the templates as azureDeploy but something more meaning full to me.
 
 ## 2. List of Arm Templates
 
@@ -19,7 +19,7 @@ The Parameters file needs filling in to reflect your own environments, it has a 
 - adminUsername - Again I use the value already there "sysadmin" but you can change that to whatever you need it to be
 - Project - I use the word project to mean a common name that can be spread across all the resources, the template uses this to name everything, eg if the project was "sales" a vm would be "SalesVM<integer of the build>"
 - Count - The number of machines to build
-- adminPassword - well self explanatory this, I dont put a password here I use a Azure Key Vault and pick the value right from there. Ive added the code in below in case you would like to change to use this method
+- adminPassword - well self explanatory this, I don't put a password here I use a Azure Key Vault and pick the value right from there. Ive added the code in below in case you would like to change to use this method
 
 ### 2.1.1. Code for Keyvault
                 "adminPassword": {
@@ -30,6 +30,8 @@ The Parameters file needs filling in to reflect your own environments, it has a 
                                     "secretName": "<Name of your secret>"
                             }
                 }
+
+The code to run the template is the file windowsserver.ps1, all with commenting, another habit I have to get into better.
   
 
 
