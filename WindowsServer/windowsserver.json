@@ -1,0 +1,201 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "networkSecurityGroupRules": {
+            "type": "Array"
+        },
+        "virtualMachineSize": {
+            "type": "String"
+        },
+        "adminUsername": {
+            "type": "String"
+        },
+        "adminPassword": {
+            "type": "SecureString"
+        },
+        "Project": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter a Project Name"
+            }
+        },
+        "Count": {
+            "type": "int",
+            "metadata": {
+                "description": "Enter a number of servers to build"
+            },
+            "defaultValue": 1
+        }
+
+    },
+    "variables": {
+        "NSGName":"[Concat(parameters('Project'),'_nsg')]",
+        "virtualMachineName":"[concat(parameters('Project'),'vm')]",
+        "vnetName":"[concat(parameters('Project'),'_vnet')]",
+        "SubnetName":"[concat(parameters('Project'),'_Subnet')]",
+        "nsgId": "[resourceId(resourceGroup().name, 'Microsoft.Network/networkSecurityGroups',variables('NSGName'))]",
+        "subnetRef": "[resourceId(resourceGroup().name,'Microsoft.Network/virtualNetworks/subnets',variables('vnetName'),variables('SubnetName'))]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Network/virtualNetworks",
+            "name": "[variables('vnetName')]",
+            "apiVersion": "2019-04-01",
+            "location":"[resourceGroup().location]",
+            "tags": {
+                "Company": "HeliosTech",
+                "Department": "IT",
+                "Project":"[parameters('Project')]",
+                "type": "Virtual Network"
+            },
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes":[
+                         "10.0.0.0/16"
+                    ]
+                },
+                "subnets":[
+                      {
+                        "name": "[variables('SubnetName')]",
+                        "properties":{
+                            "addressPrefix": "10.0.1.0/24"
+                    }
+                    }
+
+                ]    
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2019-07-01",
+            "name": "[concat(variables('virtualMachineName'),copyIndex(),'_nic')]",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "Project":"[parameters('Project')]",
+                "type": "Network Interface",
+                "VM": "[concat(variables('virtualMachineName'),copyIndex())]"
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkSecurityGroups/', variables('NSGName'))]",
+                "[concat('Microsoft.Network/publicIpAddresses/', concat(variables('virtualMachineName'),copyIndex(),'_pip'))]",
+                "[concat('Microsoft.Network/virtualNetworks/', variables('vnetName'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "subnet": {
+                                "id": "[variables('subnetRef')]"
+                            },
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIpAddress": {
+                                "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/publicIpAddresses', concat(variables('virtualMachineName'),copyIndex(),'_pip'))]"
+                            }
+                        }
+                    }
+                ],
+                "networkSecurityGroup": {
+                    "id": "[variables('nsgId')]"
+                }
+            },
+            "copy": {
+                "name": "interfaceCopy",
+                "count": "[parameters('Count')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkSecurityGroups",
+            "apiVersion": "2019-02-01",
+            "name": "[variables('NSGName')]",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "Project":"[parameters('Project')]",
+                "type": "Network Security Group"
+            },
+            "properties": {
+                "securityRules": "[parameters('networkSecurityGroupRules')]"
+            }
+        },
+        {
+            "type": "Microsoft.Network/publicIpAddresses",
+            "apiVersion": "2019-02-01",
+            "name": "[concat(variables('virtualMachineName'),copyIndex(),'_pip')]",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "Project":"[parameters('Project')]",
+                "type": "Public IP Address",
+                "VM": "[concat(variables('virtualMachineName'),copyIndex())]"
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Network/virtualNetworks/', variables('vnetName'))]"
+            ],
+            "sku": {
+                "name": "Basic"
+            },
+            "properties": {
+                "publicIpAllocationMethod": "Dynamic"
+            },
+            "copy": {
+                "name": "publicipaddressCopy",
+                "count": "[parameters('Count')]"
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2019-07-01",
+            "name": "[concat(variables('virtualMachineName'),copyIndex())]",
+            "location": "[resourceGroup().location]",
+            "tags": {
+                "Project":"[parameters('Project')]",
+                "type": "Virtual Machine"
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Network/networkInterfaces/',concat(variables('virtualMachineName'),copyIndex(),'_nic'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('virtualMachineSize')]"
+                },
+                "storageProfile": {
+                    "osDisk": {
+                        "name": "[concat(variables('virtualMachineName'),copyIndex(),'_osdisk')]",
+                        "createOption": "fromImage",
+                        "managedDisk": {
+                            "storageAccountType": "StandardSSD_LRS"
+                        }
+                    },
+                    "imageReference": {
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "2016-Datacenter",
+                        "version": "latest"
+                    }
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('virtualMachineName'),copyIndex(),'_nic'))]"
+                        }
+                    ]
+                },
+                "osProfile": {
+                    "computerName": "[variables('virtualMachineName')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]",
+                    "windowsConfiguration": {
+                        "enableAutomaticUpdates": true,
+                        "provisionVmAgent": true
+                    }
+                }
+            },
+            "copy": {
+                "name": "virtualMachineCopy",
+                "count": "[parameters('Count')]"
+            }
+        }
+    ],
+    "outputs": {}
+    
+}
