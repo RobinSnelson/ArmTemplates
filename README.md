@@ -6,12 +6,12 @@
   
 # 1. Arm Templates Repository
 ### 1.1. Introduction
-This Repository will contain some of the ARM Templates I create for any number of reasons, mostly to be fair this will be learn how to create ARM templates and solve the little problems/challenges I give myself. I find the whole subject of Infrastructure as code fascinating and want to show that I can accomplish what I am setting out to do. By creating the templates here. Some will be fairly simple and some will be very complex depending on the scale o fthe problem or targets I have set myself. I don't tend to name the templates as azureDeploy but something more meaning full to me.
+This Repository will contain some of the ARM Templates I create for any number of reasons, mostly to be fair this will be learn how to create ARM templates and solve the little problems/challenges I give myself. I find the whole subject of Infrastructure as code fascinating and want to show that I can accomplish what I am setting out to do. By creating the templates here. Some will be fairly simple and some will be very complex depending on the scale of the problem or targets I have set myself. I don't tend to name the templates as azureDeploy but something more meaning full to me.
 
 ## 2. List of Arm Templates
 
 ### 2.1. WindowsServer
-This template was created to stop the drudge of creating windows servers for testing purposes, I changed it recently to support creating multiple servers within the same Resource Group and vNet. The next challenge for this will be create the machines in multiple vNets and Subnets with Peerings.
+This template was created to stop the drudge of creating windows servers for testing purposes, I changed it recently to support creating multiple servers within the same Resource Group and vNet. The next challenge for this will be create the machines in multiple vNets and Subnets with vNet Peerings.
 
 The Parameters file needs filling in to reflect your own environments, it has a number of values that need adding 
 
@@ -32,7 +32,8 @@ The Parameters file needs filling in to reflect your own environments, it has a 
                 }
 
 The code to run the template is the file windowsserver.ps1, all with commenting, another habit I have to get into better.
-  
+
+The network security group has one rule in it to provide RDP access to the servers.
 
 
 
