@@ -10,7 +10,7 @@ $templateFile = "./windowsserver.json"
 $ParametersFile = "./windowsserver.parameters.json"
 
 #Set the variable for the Resource Group 
-$resourceGroup = "EnvOne"
+$resourceGroup = $name
 
 #This code builds a name for the deployment based on the time and the resourcegroup name
 $date = get-date -Format MMddhhmm
